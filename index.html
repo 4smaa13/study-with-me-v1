@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Study Hub | مركز الدراسة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="logo" id="logo-text">📚 Uni Study Hub</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+            <button class="lang-btn" id="lang-btn" onclick="toggleLanguage()">العربية</button>
+            <button id="logout-btn" onclick="logOut()" style="display: none; background: transparent; border: 1px solid var(--danger-border); color: var(--danger-text); padding: 5px 10px; font-size: 0.85rem;">Log Out</button>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <h1 id="hero-title">Welcome to the Study Hub</h1>
+        <p id="hero-desc">Your central place for live collaboration, tasks, and resources.</p>
+    </header>
+
+    <main class="container">
+
+        <!-- AUTH SECTION -->
+        <div id="auth-section" class="card" style="max-width: 420px; margin: 40px auto; text-align: center;">
+            <h2 id="auth-title">🔐 Student Authentication</h2>
+            <p id="auth-desc" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">Log in or register to access study rooms.</p>
+            
+            <div class="form-group">
+                <label id="lbl-auth-email" for="auth-email">Email Address:</label>
+                <input type="email" id="auth-email" placeholder="student@university.edu">
+            </div>
+            <div class="form-group">
+                <label id="lbl-auth-pass" for="auth-pass">Password:</label>
+                <input type="password" id="auth-pass" placeholder="••••••••">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="btn-login" onclick="logIn()" style="flex: 1;">Log In</button>
+                <button id="btn-signup" onclick="signUp()" style="flex: 1; background: transparent; border: 1px solid var(--accent-gold); color: var(--accent-gold);">Sign Up</button>
+            </div>
+            <p id="auth-status" style="margin-top: 15px; font-size: 0.85rem;"></p>
+        </div>
+
+        <!-- MAIN APP CONTENT -->
+        <div id="app-content" style="display: none;">
+
+            <!-- ROOM SELECTION -->
+            <section class="card-section">
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+                    <div>
+                        <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                            <span id="room-active-title-text">No Room Joined</span>
+                            <span id="role-badge" class="role-badge" style="display: none;"></span>
+                        </h3>
+                        <p id="room-active-subtitle" style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Join or create a room code below to view links and schedules.</p>
+                        
+                        <!-- Restored Delete Room Button -->
+                        <button id="delete-room-btn" onclick="deleteCurrentRoom()" style="display: none; margin-top: 10px; font-size: 0.8rem; background: transparent; border: 1px solid var(--danger-border); color: var(--danger-text); padding: 4px 10px; border-radius: 4px; cursor: pointer;">
+                            🗑️ Delete Room (Admin Only)
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" id="join-code-input" placeholder="Enter Room Code (e.g. NTU-AI-Y2)" style="width: 220px; padding: 8px 12px; background-color: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); border-radius: 6px;">
+                        <button id="btn-join-room" onclick="joinRoomByInput()">Join Room</button>
+                    </div>
+                </div>
+
+                <!-- Create Room Form -->
+                <details class="card" style="margin-bottom: 25px;">
+                    <summary id="create-room-summary" style="cursor: pointer; font-weight: bold; color: var(--accent-gold);">➕ Need to create a new room/server for your class?</summary>
+                    <div style="margin-top: 15px;">
+                        <div class="form-group">
+                            <label id="lbl-new-room-name" for="new-room-name">Room / Class Name:</label>
+                            <input type="text" id="new-room-name" placeholder="e.g. AI Engineering Year 2">
+                        </div>
+                        <div class="form-group">
+                            <label id="lbl-new-room-code" for="new-room-code">Unique Room Code (Letters & Numbers):</label>
+                            <input type="text" id="new-room-code" placeholder="e.g. NTU-AI-Y2">
+                        </div>
+                        <div class="form-group">
+                            <label id="lbl-new-room-uni" for="new-room-uni">University / Institution Name:</label>
+                            <input type="text" id="new-room-uni" placeholder="e.g. Northern Technical University">
+                        </div>
+                        <button id="btn-create-room" onclick="createNewRoom()">Create & Launch Room</button>
+                    </div>
+                </details>
+            </section>
+
+            <!-- POMODORO TIMER & VIDEO STUDY ROOM ROW -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                
+                <!-- Controllable Pomodoro Timer Widget -->
+                <div class="card" style="text-align: center;">
+                    <h3 id="pomo-title" style="margin: 0; font-size: 1.1rem;">⏱️ Pomodoro Study Timer</h3>
+                    
+                    <div style="display: flex; justify-content: center; gap: 12px; margin-top: 10px;">
+                        <div style="text-align: center;">
+                            <label id="lbl-pomo-focus" style="font-size: 0.75rem; color: var(--text-muted); display: block;">Focus (min)</label>
+                            <input type="number" id="input-focus-time" value="25" min="1" max="120" style="width: 60px; text-align: center; padding: 4px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--card-border); border-radius: 4px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label id="lbl-pomo-break" style="font-size: 0.75rem; color: var(--text-muted); display: block;">Break (min)</label>
+                            <input type="number" id="input-break-time" value="5" min="1" max="60" style="width: 60px; text-align: center; padding: 4px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--card-border); border-radius: 4px;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label id="lbl-pomo-sound" style="font-size: 0.75rem; color: var(--text-muted); display: block;">Sound</label>
+                            <input type="checkbox" id="input-sound-enabled" checked style="width: 18px; height: 18px; margin-top: 6px; cursor: pointer;">
+                        </div>
+                    </div>
+
+                    <div id="pomo-timer" class="pomo-display">25:00</div>
+                    <p id="pomo-mode" style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-muted);">Focus Session</p>
+
+                    <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                        <button id="btn-pomo-toggle" onclick="togglePomodoro()">Start Focus</button>
+                        <button id="btn-pomo-reset" onclick="resetPomodoro()" style="background: transparent; border: 1px solid var(--card-border); color: var(--text-primary);">Reset</button>
+                        <button id="btn-pomo-skip" onclick="skipPomodoroPhase()" style="background: transparent; border: 1px solid var(--accent-gold); color: var(--accent-gold);">Skip ⏭️</button>
+                    </div>
+                </div>
+
+                <!-- Live Voice/Video Room Card -->
+                <div class="card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <h3 id="video-title" style="margin: 0 0 8px 0; font-size: 1.1rem;">🎙️ Live Video Study Room</h3>
+                    <p id="video-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Jump into a live voice or video study session with your room members.</p>
+                    <button id="btn-join-video" onclick="toggleVideoRoom()">Join Live Video Call</button>
+                </div>
+            </div>
+
+            <!-- Video Room Frame Container -->
+            <div id="video-frame-container" class="card" style="display: none; margin-bottom: 25px; height: 500px; padding: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: bold; font-size: 0.9rem;" id="lbl-live-session">🔴 Active Live Session</span>
+                    <button onclick="toggleVideoRoom()" style="padding: 4px 10px; font-size: 0.8rem;">Leave Call</button>
+                </div>
+                <iframe id="jitsi-iframe" allow="camera; microphone; display-capture; autoplay" style="width: 100%; height: calc(100% - 35px); border: none; border-radius: 6px;"></iframe>
+            </div>
+
+            <!-- SHARED ROOM TASK BOARD SECTION -->
+            <section class="card-section" style="margin-bottom: 25px;">
+                <h2 id="tasks-title">📋 Room Assignment & Task Board</h2>
+                <div class="card">
+                    <form onsubmit="addRoomTask(event)" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                        <input type="text" id="task-input" placeholder="New task or exam deadline..." style="flex: 1; padding: 10px 14px; background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); border-radius: 6px;" required>
+                        <button type="submit" id="btn-add-task">Add Task</button>
+                    </form>
+                    <div id="tasks-container" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+            </section>
+
+            <!-- Schedule Image Section -->
+            <section class="card-section">
+                <h2 id="schedule-title">📅 Schedule & Timetable</h2>
+                
+                <!-- Explicit Admin Schedule Upload Card -->
+                <div id="admin-sched-card" class="card" style="margin-bottom: 20px; display: none;">
+                    <div class="form-group">
+                        <label id="lbl-sched-file" for="sched-file">Upload Official Schedule Image (Admin Only):</label>
+                        <input type="file" id="sched-file" accept="image/*">
+                    </div>
+                    <button id="sched-upload-btn" onclick="uploadScheduleImage()">Upload Schedule Image</button>
+                    <p id="sched-upload-status" style="margin-top: 10px; font-size: 0.9rem;"></p>
+                </div>
+
+                <div class="card" id="schedule-display-container" style="text-align: center; padding: 20px;">
+                    <div id="no-sched-text" class="empty-state">
+                        📜 <p id="no-sched-msg" style="margin: 5px 0 0 0;">No official schedule image uploaded for this room yet.</p>
+                    </div>
+                    <img id="schedule-img" alt="Official Class Schedule" onclick="openLightbox()" style="max-width: 100%; height: auto; border-radius: 8px; display: none; box-shadow: var(--shadow-moody); margin: 0 auto; border: 1px solid var(--card-border); cursor: zoom-in;">
+                    
+                    <div id="sched-stamp" style="display: none; margin-top: 12px; padding: 6px 14px; font-size: 0.85rem; color: var(--accent-gold); background-color: var(--bg-dark); border: 1px solid var(--card-border); border-radius: 20px; font-style: italic;">
+                        <span id="lbl-last-updated">⏳ Last updated:</span> <span id="sched-date-text">--</span>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <button id="admin-delete-sched-btn" onclick="deleteScheduleImage()" style="display: none; padding: 5px 12px; font-size: 0.85rem; border-radius: 4px; background: transparent; border: 1px solid var(--danger-border); color: var(--danger-text);">
+                            🗑️ Remove Current Schedule (Admin Only)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Links Section -->
+            <section class="card-section" style="margin-top: 25px;">
+                <h2 id="resources-title">🔗 Important Room Links</h2>
+
+                <!-- Add a Link or PDF (open to every room member) -->
+                <div id="add-resource-card" class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                        <button type="button" id="tab-link-btn" onclick="switchResourceTab('link')" class="resource-tab active">🔗 Add Link</button>
+                        <button type="button" id="tab-pdf-btn" onclick="switchResourceTab('pdf')" class="resource-tab">📄 Share PDF</button>
+                    </div>
+
+                    <!-- Link URL form -->
+                    <div id="link-tab-content">
+                        <div class="form-group">
+                            <label id="lbl-link-title" for="link-title">Link Title / Name:</label>
+                            <input type="text" id="link-title" placeholder="e.g., Department Portal">
+                        </div>
+                        <div class="form-group">
+                            <label id="lbl-link-url" for="link-url">URL / Address:</label>
+                            <input type="url" id="link-url" placeholder="https://example.com">
+                        </div>
+                        <button id="add-link-btn" onclick="addCustomLink()">Add Link to Room</button>
+                        <p id="link-add-status" style="margin-top: 10px; font-size: 0.9rem;"></p>
+                    </div>
+
+                    <!-- PDF upload form -->
+                    <div id="pdf-tab-content" style="display: none;">
+                        <div class="form-group">
+                            <label id="lbl-pdf-title" for="pdf-title">PDF Title:</label>
+                            <input type="text" id="pdf-title" placeholder="e.g., Week 5 Lecture Slides">
+                        </div>
+                        <div class="form-group">
+                            <label id="lbl-pdf-file" for="pdf-file">Choose PDF File:</label>
+                            <input type="file" id="pdf-file" accept="application/pdf">
+                        </div>
+                        <button id="pdf-upload-btn" onclick="uploadPdfLink()">Upload & Share PDF</button>
+                        <p id="pdf-upload-status" style="margin-top: 10px; font-size: 0.9rem;"></p>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <input type="text" id="link-search" placeholder="🔍 Search links in this room..." oninput="filterLinks()">
+                </div>
+
+                <div class="grid" id="links-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                
+                <div id="no-links-text" class="empty-state" style="display: none; margin-top: 10px;">
+                    🔖 <p id="no-links-msg" style="margin: 5px 0 0 0;">No room links saved yet.</p>
+                </div>
+            </section>
+
+            <!-- REALTIME CHAT SECTION -->
+            <section class="card-section" style="margin-top: 25px;">
+                <h2 id="chat-header">
+                    <span id="chat-title-text">💬 Room Chat</span>
+                    <span id="chat-unread" style="width: 10px; height: 10px; background-color: var(--accent-gold); border-radius: 50%; display: none; margin-left: 6px;"></span>
+                </h2>
+                <div class="card" style="display: flex; flex-direction: column; height: 380px; padding: 15px;">
+                    
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; padding-right: 5px; margin-bottom: 15px;">
+                        <div class="empty-state" id="no-messages-text">
+                            💬 <p id="no-messages-msg" style="margin: 5px 0 0 0;">No messages yet. Be the first to say hi!</p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="sendChatMessage(event)" style="display: flex; gap: 8px;">
+                        <input type="text" id="chat-input" placeholder="Type a message..." style="flex: 1; padding: 10px 14px; background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); border-radius: 6px;" required autocomplete="off">
+                        <button type="submit" id="btn-send-chat">Send</button>
+                    </form>
+
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Lightbox Image Modal -->
+    <div id="lightbox-modal" class="modal" style="display: none;" onclick="closeLightbox()">
+        <span class="modal-close" onclick="closeLightbox()">&times;</span>
+        <img class="modal-content" id="lightbox-img" alt="Enlarged Class Schedule">
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div id="pdf-modal" class="modal" style="display: none;">
+        <span class="modal-close" onclick="closePdfModal()">&times;</span>
+        <iframe id="pdf-viewer-frame" class="modal-content" style="width: 85%; height: 85vh;"></iframe>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = 'https://eiydglxkyajnoyhehdki.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_6eudSdp5axKDdWKbQzDiqA_9tDbhWpp';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentRoomId = null;
+        let currentRoomCode = '';
+        let currentUser = null;
+        let isRoomAdmin = false;
+        let chatChannel = null;
+        let taskChannel = null;
+        let currentTheme = 'dark';
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                logo: "📚 Uni Study Hub", btnLang: "العربية", logout: "Log Out",
+                heroTitle: "Welcome to the Study Hub", heroDesc: "Your central place for live collaboration, tasks, and resources.",
+                authTitle: "🔐 Student Authentication", authDesc: "Log in or register to access study rooms.",
+                lblEmail: "Email Address:", lblPass: "Password:", btnLogin: "Log In", btnSignup: "Sign Up",
+                noRoomJoined: "No Room Joined", roomSub: "Join or create a room code below to view links and schedules.",
+                btnDeleteRoom: "🗑️ Delete Room (Admin Only)", phJoinCode: "Enter Room Code (e.g. NTU-AI-Y2)", btnJoinRoom: "Join Room",
+                createRoomSummary: "➕ Need to create a new room/server for your class?", lblNewRoomName: "Room / Class Name:",
+                phNewRoomName: "e.g. AI Engineering Year 2", lblNewRoomCode: "Unique Room Code (Letters & Numbers):",
+                phNewRoomCode: "e.g. NTU-AI-Y2", lblNewRoomUni: "University / Institution Name:", phNewRoomUni: "e.g. Northern Technical University",
+                btnCreateRoom: "Create & Launch Room", scheduleTitle: "📅 Schedule & Timetable", lblSchedFile: "Upload Official Schedule Image (Admin Only):",
+                btnUploadSched: "Upload Schedule Image", noSchedMsg: "No official schedule image uploaded for this room yet.",
+                lblLastUpdated: "⏳ Last updated:", btnRemoveSched: "🗑️ Remove Current Schedule (Admin Only)", resourcesTitle: "🔗 Important Room Links",
+                lblLinkTitle: "Link Title / Name:", lblLinkUrl: "URL / Address:", btnAddLink: "Add Link to Room", phSearchLinks: "🔍 Search links in this room...",
+                noLinksMsg: "No room links saved yet.", chatTitle: "💬 Room Chat", phChatInput: "Type a message...", btnSendChat: "Send",
+                noMessagesMsg: "No messages yet. Be the first to say hi!", pomoTitle: "⏱️ Pomodoro Study Timer", lblPomoFocus: "Focus (min)",
+                lblPomoBreak: "Break (min)", lblPomoSound: "Sound", pomoFocus: "Focus Session", pomoBreak: "Break Time ☕", pomoStart: "Start Focus", pomoPause: "Pause",
+                btnSkip: "Skip ⏭️", videoTitle: "🎙️ Live Video Study Room", videoDesc: "Jump into a live voice or video study session with your room members.",
+                btnJoinVideo: "Join Live Video Call", tasksTitle: "📋 Room Assignment & Task Board", phTaskInput: "New task or exam deadline...",
+                btnAddTask: "Add Task", badgeAdmin: "👑 Admin", badgeMember: "👤 Member",
+                pdfUploadTitle: "📄 Share a PDF", lblPdfTitle: "PDF Title:", phPdfTitle: "e.g., Week 5 Lecture Slides",
+                lblPdfFile: "Choose PDF File:", btnPdfUpload: "Upload & Share PDF", dir: "ltr"
+            },
+            ar: {
+                logo: "📚 مركز الدراسة الجامعي", btnLang: "English", logout: "تسجيل الخروج",
+                heroTitle: "مرحباً بكم في مركز الدراسة", heroDesc: "منصتكم المركزية للتعاون المباشر، المهام، والمصادر الأكاديمية.",
+                authTitle: "🔐 تسجيل دخول الطلاب", authDesc: "قم بتسجيل الدخول أو إنشاء حساب للوصول إلى القاعات.",
+                lblEmail: "البريد الإلكتروني:", lblPass: "كلمة المرور:", btnLogin: "تسجيل الدخول", btnSignup: "إنشاء حساب",
+                noRoomJoined: "لم يتم الانضمام لأي غرفة", roomSub: "ادخل رمز الغرفة أو أنشئ غرفة جديدة لعرض الجداول والروابط.",
+                btnDeleteRoom: "🗑️ حذف الغرفة (للمسؤول فقط)", phJoinCode: "أدخل رمز الغرفة (مثال: NTU-AI-Y2)", btnJoinRoom: "انضمام للغرفة",
+                createRoomSummary: "➕ هل تريد إنشاء غرفة/سيرفر جديد لصفك؟", lblNewRoomName: "اسم الغرفة / الصف:",
+                phNewRoomName: "مثال: هندسة الذكاء الاصطناعي - المرحلة الثانية", lblNewRoomCode: "رمز الغرفة الفريد (أحرف وأرقام):",
+                phNewRoomCode: "مثال: NTU-AI-Y2", lblNewRoomUni: "اسم الجامعة / المعهد:", phNewRoomUni: "مثال: الجامعة التقنية الشمالية",
+                btnCreateRoom: "إنشاء وإطلاق الغرفة", scheduleTitle: "📅 الجدول الدراسي والأوقات", lblSchedFile: "رفع صورة الجدول الرسمي (للمسؤول فقط):",
+                btnUploadSched: "رفع صورة الجدول", noSchedMsg: "لم يتم رفع جدول رسمي لهذه الغرفة بعد.",
+                lblLastUpdated: "⏳ آخر تحديث:", btnRemoveSched: "🗑️ إزالة الجدول الحالي (للمسؤول فقط)", resourcesTitle: "🔗 روابط الغرفة المهمة",
+                lblLinkTitle: "عنوان الرابط / الاسم:", lblLinkUrl: "الرابط / العنوان الإلكتروني:", btnAddLink: "إضافة الرابط للغرفة",
+                phSearchLinks: "🔍 البحث عن روابط في هذه الغرفة...", noLinksMsg: "لا توجد روابط محفوظة في هذه الغرفة بعد.",
+                chatTitle: "💬 المحادثة المباشرة", phChatInput: "اكتب رسالة...", btnSendChat: "إرسال",
+                noMessagesMsg: "لا توجد رسائل بعد. كن أول من يرسل رسالة!", pomoTitle: "⏱️ مؤقت بومودورو للدراسة", lblPomoFocus: "التركيز (دقائق)",
+                lblPomoBreak: "الاستراحة (دقائق)", lblPomoSound: "الصوت", pomoFocus: "جلسة تركيز", pomoBreak: "وقت استراحة ☕", pomoStart: "بدء التركيز", pomoPause: "إيقاف مؤقت",
+                btnSkip: "تخطي ⏭️", videoTitle: "🎙️ غرفة الدراسة الصوتية والـVideo المباشرة", videoDesc: "انضم إلى مكالمة صوتية أو فيديو مباشرة مع زملائك في الغرفة.",
+                btnJoinVideo: "الانضمام للمكالمة المباشرة", tasksTitle: "📋 لوحة المهام والواجبات", phTaskInput: "مهمة جديدة أو موعد امتحان...",
+                btnAddTask: "إضافة مهمة", badgeAdmin: "👑 مسؤول", badgeMember: "👤 عضو",
+                pdfUploadTitle: "📄 مشاركة ملف PDF", lblPdfTitle: "عنوان الملف:", phPdfTitle: "مثال: محاضرة الأسبوع الخامس",
+                lblPdfFile: "اختر ملف PDF:", btnPdfUpload: "رفع ومشاركة الملف", dir: "rtl"
+            }
+        };
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-btn').innerText = currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.documentElement.dir = t.dir;
+            document.documentElement.lang = currentLang;
+
+            const map = {
+                'logo-text': t.logo, 'lang-btn': t.btnLang, 'logout-btn': t.logout,
+                'hero-title': t.heroTitle, 'hero-desc': t.heroDesc, 'auth-title': t.authTitle,
+                'auth-desc': t.authDesc, 'lbl-auth-email': t.lblEmail, 'lbl-auth-pass': t.lblPass,
+                'btn-login': t.btnLogin, 'btn-signup': t.btnSignup, 'delete-room-btn': t.btnDeleteRoom,
+                'join-code-input': t.phJoinCode, 'btn-join-room': t.btnJoinRoom, 'create-room-summary': t.createRoomSummary,
+                'lbl-new-room-name': t.lblNewRoomName, 'new-room-name': t.phNewRoomName, 'lbl-new-room-code': t.lblNewRoomCode,
+                'new-room-code': t.phNewRoomCode, 'lbl-new-room-uni': t.lblNewRoomUni, 'new-room-uni': t.phNewRoomUni,
+                'btn-create-room': t.btnCreateRoom, 'pomo-title': t.pomoTitle, 'lbl-pomo-focus': t.lblPomoFocus,
+                'lbl-pomo-break': t.lblPomoBreak, 'lbl-pomo-sound': t.lblPomoSound, 'video-title': t.videoTitle, 'video-desc': t.videoDesc,
+                'btn-join-video': t.btnJoinVideo, 'tasks-title': t.tasksTitle, 'task-input': t.phTaskInput,
+                'btn-add-task': t.btnAddTask, 'schedule-title': t.scheduleTitle, 'lbl-sched-file': t.lblSchedFile,
+                'sched-upload-btn': t.btnUploadSched, 'no-sched-msg': t.noSchedMsg, 'lbl-last-updated': t.lblLastUpdated,
+                'admin-delete-sched-btn': t.btnRemoveSched, 'resources-title': t.resourcesTitle, 'lbl-link-title': t.lblLinkTitle,
+                'lbl-link-url': t.lblLinkUrl, 'add-link-btn': t.btnAddLink, 'link-search': t.phSearchLinks,
+                'no-links-msg': t.noLinksMsg, 'chat-title-text': t.chatTitle, 'chat-input': t.phChatInput,
+                'btn-send-chat': t.btnSendChat, 'lbl-pdf-title': t.lblPdfTitle,
+                'pdf-title': t.phPdfTitle, 'lbl-pdf-file': t.lblPdfFile, 'pdf-upload-btn': t.btnPdfUpload
+            };
+
+            for (const [id, val] of Object.entries(map)) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                if (el.tagName === 'INPUT') el.placeholder = val;
+                else el.innerText = val;
+            }
+
+            document.getElementById('pomo-mode').innerText = isBreak ? t.pomoBreak : t.pomoFocus;
+            document.getElementById('btn-pomo-toggle').innerText = pomoTimer ? t.pomoPause : t.pomoStart;
+            document.getElementById('btn-pomo-skip').innerText = t.btnSkip;
+
+            const badge = document.getElementById('role-badge');
+            if (badge.style.display !== 'none') {
+                badge.innerText = isRoomAdmin ? t.badgeAdmin : t.badgeMember;
+            }
+        }
+
+        async function signUp() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-pass').value.trim();
+            const status = document.getElementById('auth-status');
+            if (!email || !password) return alert('Please enter email and password!');
+
+            status.innerText = 'Creating account... ⏳';
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            status.innerText = error ? error.message : '✨ Account created successfully! You can now log in.';
+            status.style.color = error ? "var(--danger-text)" : "var(--accent-gold)";
+        }
+
+        async function logIn() {
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-pass').value.trim();
+            const status = document.getElementById('auth-status');
+            if (!email || !password) return alert('Please enter email and password!');
+
+            status.innerText = 'Logging in... ⏳';
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                status.innerText = error.message;
+                status.style.color = "var(--danger-text)";
+            } else {
+                status.innerText = "";
+                checkUserSession();
+            }
+        }
+
+        async function logOut() {
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            currentUser = user;
+            const isAuth = !!user;
+            document.getElementById('auth-section').style.display = isAuth ? 'none' : 'block';
+            document.getElementById('app-content').style.display = isAuth ? 'block' : 'none';
+            document.getElementById('logout-btn').style.display = isAuth ? 'inline-block' : 'none';
+        }
+
+        async function createNewRoom() {
+            if (!currentUser) return;
+            const name = document.getElementById('new-room-name').value.trim();
+            const code = document.getElementById('new-room-code').value.trim().toUpperCase();
+            const university = document.getElementById('new-room-uni').value.trim();
+            if (!name || !code) return alert('Please fill in the room name and code.');
+
+            const { error } = await supabaseClient.from('rooms').insert([{ name, code, university, created_by: currentUser.id }]);
+            if (error) alert(error.message);
+            else joinRoom(code);
+        }
+
+        function joinRoomByInput() {
+            const code = document.getElementById('join-code-input').value.trim();
+            if (code) joinRoom(code);
+        }
+
+        async function joinRoom(code) {
+            const { data, error } = await supabaseClient.from('rooms').select('*').eq('code', code.toUpperCase()).single();
+            if (error || !data) return alert('Room code not found!');
+
+            currentRoomId = data.id;
+            currentRoomCode = data.code;
+            isRoomAdmin = currentUser && (data.created_by === currentUser.id);
+
+            const t = translations[currentLang];
+            document.getElementById('room-active-title-text').innerText = `${currentLang === 'ar' ? '🏫 الغرفة:' : '🏫 Room:'} ${data.name} (${data.code})`;
+            
+            const badge = document.getElementById('role-badge');
+            badge.style.display = 'inline-block';
+            badge.innerText = isRoomAdmin ? t.badgeAdmin : t.badgeMember;
+            badge.className = `role-badge ${isRoomAdmin ? 'admin' : 'member'}`;
+
+            document.getElementById('room-active-subtitle').innerText = `${currentLang === 'ar' ? 'الجامعة / الكلية:' : 'University / Campus:'} ${data.university || 'General'}`;
+
+            // Ensure admin panels instantly display if creator matches user
+            updateAdminPermissionsUI();
+            loadRoomLinks();
+            loadScheduleImage();
+            loadRoomChat();
+            loadRoomTasks();
+        }
+
+        function updateAdminPermissionsUI() {
+            const disp = isRoomAdmin ? 'block' : 'none';
+            document.getElementById('admin-sched-card').style.display = disp;
+            document.getElementById('delete-room-btn').style.display = isRoomAdmin ? 'block' : 'none';
+        }
+
+        async function deleteCurrentRoom() {
+            if (!isRoomAdmin || !currentRoomId) return;
+            if (!confirm('⚠️ Are you sure you want to permanently delete this room?')) return;
+            await supabaseClient.from('rooms').delete().eq('id', currentRoomId);
+            location.reload();
+        }
+
+        // ===== Pomodoro Timer Logic =====
+        let pomoTimer = null, isBreak = false, pomoTime = 25 * 60;
+
+        // Audio context is created lazily on first user interaction (browsers block
+        // unsolicited autoplay), then reused for every timer beep afterward.
+        let audioCtx = null;
+
+        function playTimerSound() {
+            const soundEnabled = document.getElementById('input-sound-enabled').checked;
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                oscillator.connect(gain);
+                gain.connect(audioCtx.destination);
+                oscillator.type = 'sine';
+                // Different pitch depending on which phase just ended, so you can
+                // tell "break just ended, back to focus" from "focus just ended" by ear.
+                oscillator.frequency.value = isBreak ? 660 : 880;
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.6);
+            } catch (e) {
+                console.error('Could not play timer sound:', e);
+            }
+        }
+
+        function updatePomoDisplay() {
+            const mins = Math.floor(pomoTime / 60), secs = pomoTime % 60;
+            document.getElementById('pomo-timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function togglePomodoro() {
+            if (pomoTimer) {
+                clearInterval(pomoTimer);
+                pomoTimer = null;
+                document.getElementById('btn-pomo-toggle').innerText = translations[currentLang].pomoStart;
+            } else {
+                pomoTimer = setInterval(() => {
+                    pomoTime--;
+                    updatePomoDisplay();
+                    if (pomoTime <= 0) {
+                        clearInterval(pomoTimer);
+                        pomoTimer = null;
+                        playTimerSound();
+                        skipPomodoroPhase(true);
+                    }
+                }, 1000);
+                document.getElementById('btn-pomo-toggle').innerText = translations[currentLang].pomoPause;
+            }
+        }
+
+        function skipPomodoroPhase(auto = false) {
+            if (!auto && pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+            isBreak = !isBreak;
+            const focusMin = parseInt(document.getElementById('input-focus-time').value, 10) || 25;
+            const breakMin = parseInt(document.getElementById('input-break-time').value, 10) || 5;
+            pomoTime = (isBreak ? breakMin : focusMin) * 60;
+            document.getElementById('pomo-mode').innerText = isBreak ? translations[currentLang].pomoBreak : translations[currentLang].pomoFocus;
+            document.getElementById('btn-pomo-toggle').innerText = translations[currentLang].pomoStart;
+            updatePomoDisplay();
+        }
+
+        function resetPomodoro() {
+            if (pomoTimer) clearInterval(pomoTimer);
+            pomoTimer = null;
+            isBreak = false;
+            pomoTime = (parseInt(document.getElementById('input-focus-time').value, 10) || 25) * 60;
+            document.getElementById('pomo-mode').innerText = translations[currentLang].pomoFocus;
+            document.getElementById('btn-pomo-toggle').innerText = translations[currentLang].pomoStart;
+            updatePomoDisplay();
+        }
+
+        // Video Room Toggle
+        let isVideoOpen = false;
+        function toggleVideoRoom() {
+            if (!currentRoomId) return alert('Join a room first!');
+            isVideoOpen = !isVideoOpen;
+            const container = document.getElementById('video-frame-container');
+            const iframe = document.getElementById('jitsi-iframe');
+            if (isVideoOpen) {
+                iframe.src = `https://meet.jit.si/StudyHubRoom_${currentRoomCode.replace(/[^a-zA-Z0-9]/g, "")}#userInfo.displayName="${encodeURIComponent(currentUser.email.split('@')[0])}"`;
+                container.style.display = 'block';
+            } else {
+                iframe.src = "";
+                container.style.display = 'none';
+            }
+        }
+
+        // Task Board
+        async function loadRoomTasks() {
+            if (!currentRoomId) return;
+            const { data } = await supabaseClient.from('room_tasks').select('*').eq('room_id', currentRoomId).order('created_at', { ascending: false });
+            renderTasks(data || []);
+
+            if (taskChannel) supabaseClient.removeChannel(taskChannel);
+            taskChannel = supabaseClient.channel(`tasks_${currentRoomId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'room_tasks', filter: `room_id=eq.${currentRoomId}` }, loadRoomTasks)
+                .subscribe();
+        }
+
+        function renderTasks(tasks) {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = tasks.length === 0 ? `<p style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin: 0;">No active room tasks.</p>` : '';
+            
+            tasks.forEach(t => {
+                const item = document.createElement('div');
+                item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--card-border);";
+                const status = t.status || 'todo';
+                item.innerHTML = `
+                    <span style="font-size: 0.9rem; ${status === 'done' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(t.task)}</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="task-status status-${status}" onclick="cycleTaskStatus('${t.id}', '${status}')" style="cursor:pointer; padding:2px 8px; font-size:0.75rem; border-radius:4px; background:var(--card-border);">${status.replace('_', ' ')}</span>
+                        ${isRoomAdmin ? `<button onclick="deleteTask('${t.id}')" style="background: transparent; color: var(--danger-text); border: none; cursor: pointer; padding: 0 4px;">✕</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function addRoomTask(e) {
+            e.preventDefault();
+            const input = document.getElementById('task-input');
+            const task = input.value.trim();
+            if (!task || !currentRoomId) return;
+            input.value = '';
+            await supabaseClient.from('room_tasks').insert([{ room_id: currentRoomId, task, status: 'todo' }]);
+            loadRoomTasks();
+        }
+
+        async function cycleTaskStatus(id, current) {
+            const next = current === 'todo' ? 'in_progress' : (current === 'in_progress' ? 'done' : 'todo');
+            await supabaseClient.from('room_tasks').update({ status: next }).eq('id', id);
+            loadRoomTasks();
+        }
+
+        async function deleteTask(id) {
+            await supabaseClient.from('room_tasks').delete().eq('id', id);
+            loadRoomTasks();
+        }
+
+        // Switch between the "Add Link" and "Share PDF" forms
+        function switchResourceTab(tab) {
+            const linkBtn = document.getElementById('tab-link-btn');
+            const pdfBtn = document.getElementById('tab-pdf-btn');
+            const linkContent = document.getElementById('link-tab-content');
+            const pdfContent = document.getElementById('pdf-tab-content');
+
+            if (tab === 'pdf') {
+                pdfBtn.classList.add('active');
+                linkBtn.classList.remove('active');
+                pdfContent.style.display = 'block';
+                linkContent.style.display = 'none';
+            } else {
+                linkBtn.classList.add('active');
+                pdfBtn.classList.remove('active');
+                linkContent.style.display = 'block';
+                pdfContent.style.display = 'none';
+            }
+        }
+
+        // Links Board
+        async function loadRoomLinks() {
+            if (!currentRoomId) return;
+            const { data } = await supabaseClient.from('room_links').select('*').eq('room_id', currentRoomId).order('pinned', { ascending: false });
+            renderLinks(data || []);
+        }
+
+        function renderLinks(links) {
+            const container = document.getElementById('links-container');
+            const emptyState = document.getElementById('no-links-text');
+            container.innerHTML = '';
+            emptyState.style.display = links.length === 0 ? 'block' : 'none';
+
+            links.forEach(link => {
+                const card = document.createElement('div');
+                card.className = `card ${link.pinned ? 'pinned' : ''}`;
+                card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px;';
+                card.setAttribute('data-title', link.title.toLowerCase());
+                const isPdf = link.url.toLowerCase().endsWith('.pdf');
+
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                        ${isRoomAdmin ? `<button style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; padding: 4px 8px;" onclick="togglePin('${link.id}', ${link.pinned})">${link.pinned ? '⭐' : '☆'}</button>` : ''}
+                        <a href="${link.url}" target="_blank" style="font-size: 0.95rem; text-decoration: none; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; color: var(--accent-gold); font-weight: 500;">${isPdf ? '📄' : '🔗'} ${escapeHtml(link.title)}</a>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        ${isPdf ? `<button class="action-btn" onclick="openPdfModal('${link.url}')" style="background: transparent; border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 4px 8px; font-size: 0.8rem;">👁️ View PDF</button>` : ''}
+                        <button onclick="copyToClipboard('${link.url}', this)" style="background: transparent; border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; font-size: 0.85rem;">Copy</button>
+                        ${isRoomAdmin ? `<button onclick="deleteCustomLink('${link.id}')" style="padding: 4px 10px; font-size: 0.85rem; background: transparent; border: 1px solid var(--danger-border); color: var(--danger-text);">Delete</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function addCustomLink() {
+            if (!currentRoomId) return alert('Join a room first!');
+            const titleInput = document.getElementById('link-title');
+            const urlInput = document.getElementById('link-url');
+            const statusEl = document.getElementById('link-add-status');
+            let title = titleInput.value.trim(), url = urlInput.value.trim();
+            if (!title || !url) return alert('Fill in both title and URL.');
+            if (!url.startsWith('http')) url = 'https://' + url;
+
+            const { error } = await supabaseClient.from('room_links').insert([{ room_id: currentRoomId, title, url }]);
+            if (error) {
+                statusEl.innerText = error.message;
+                statusEl.style.color = 'var(--danger-text)';
+                return;
+            }
+            statusEl.innerText = '✨ Link added!';
+            statusEl.style.color = 'var(--accent-gold)';
+            titleInput.value = ''; urlInput.value = '';
+            loadRoomLinks();
+        }
+
+        async function togglePin(id, status) {
+            if (!isRoomAdmin) return;
+            await supabaseClient.from('room_links').update({ pinned: !status }).eq('id', id);
+            loadRoomLinks();
+        }
+
+        async function deleteCustomLink(id) {
+            if (!isRoomAdmin) return;
+            await supabaseClient.from('room_links').delete().eq('id', id);
+            loadRoomLinks();
+        }
+
+        function openPdfModal(url) {
+            document.getElementById('pdf-viewer-frame').src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+            document.getElementById('pdf-modal').style.display = 'block';
+        }
+        function closePdfModal() {
+            document.getElementById('pdf-modal').style.display = 'none';
+            document.getElementById('pdf-viewer-frame').src = "";
+        }
+
+        // Share a PDF: upload the file to storage, then save it as a room link
+        // so it shows up in the Links list with the existing "View PDF" button.
+        async function uploadPdfLink() {
+            if (!currentRoomId || !currentUser) return alert('Join a room first!');
+            const titleInput = document.getElementById('pdf-title');
+            const fileInput = document.getElementById('pdf-file');
+            const statusEl = document.getElementById('pdf-upload-status');
+            const title = titleInput.value.trim();
+            const file = fileInput.files[0];
+
+            if (!title || !file) return alert('Please add a title and choose a PDF file.');
+            if (file.type !== 'application/pdf') return alert('Please select a PDF file.');
+
+            statusEl.innerText = 'Uploading PDF... ⏳';
+            statusEl.style.color = 'var(--text-muted)';
+
+            const fileName = `room_${currentRoomId}_pdf_${Date.now()}_${file.name}`;
+            const { error: uploadError } = await supabaseClient.storage.from('notes').upload(fileName, file);
+
+            if (uploadError) {
+                statusEl.innerText = uploadError.message;
+                statusEl.style.color = 'var(--danger-text)';
+                return;
+            }
+
+            const { data } = supabaseClient.storage.from('notes').getPublicUrl(fileName);
+
+            const { error: insertError } = await supabaseClient
+                .from('room_links')
+                .insert([{ room_id: currentRoomId, title, url: data.publicUrl }]);
+
+            if (insertError) {
+                statusEl.innerText = insertError.message;
+                statusEl.style.color = 'var(--danger-text)';
+                return;
+            }
+
+            statusEl.innerText = '✨ PDF shared successfully!';
+            statusEl.style.color = 'var(--accent-gold)';
+            titleInput.value = '';
+            fileInput.value = '';
+            loadRoomLinks();
+        }
+
+        // Schedule
+        async function uploadScheduleImage() {
+            if (!isRoomAdmin) return;
+            const fileInput = document.getElementById('sched-file');
+            const file = fileInput.files[0];
+            if (!file) return alert('Please select an image file first!');
+
+            const statusEl = document.getElementById('sched-upload-status');
+            statusEl.innerText = 'Uploading schedule... ⏳';
+
+            const fileName = `room_${currentRoomId}_schedule_${Date.now()}_${file.name}`;
+            const { error } = await supabaseClient.storage.from('notes').upload(fileName, file, { upsert: true });
+            
+            if (error) {
+                statusEl.innerText = error.message;
+                statusEl.style.color = 'var(--danger-text)';
+                return;
+            }
+
+            const { data } = supabaseClient.storage.from('notes').getPublicUrl(fileName);
+            displayScheduleImage(data.publicUrl, new Date().toLocaleDateString());
+            statusEl.innerText = '✨ Upload successful!';
+            statusEl.style.color = 'var(--accent-gold)';
+            fileInput.value = '';
+        }
+
+        function displayScheduleImage(url, dateText) {
+            const img = document.getElementById('schedule-img');
+            img.src = url;
+            img.style.display = 'block';
+            document.getElementById('no-sched-text').style.display = 'none';
+            document.getElementById('sched-date-text').innerText = dateText || 'Recently';
+            document.getElementById('sched-stamp').style.display = 'inline-block';
+            if (isRoomAdmin) document.getElementById('admin-delete-sched-btn').style.display = 'inline-block';
+        }
+
+        async function loadScheduleImage() {
+            if (!currentRoomId) return;
+            const { data, error } = await supabaseClient.storage.from('notes').list();
+            if (error || !data) return;
+
+            const schedFile = data.reverse().find(f => f.name.startsWith(`room_${currentRoomId}_schedule_`));
+            if (schedFile) {
+                const { data: publicUrlData } = supabaseClient.storage.from('notes').getPublicUrl(schedFile.name);
+                displayScheduleImage(publicUrlData.publicUrl, new Date(schedFile.created_at || Date.now()).toLocaleDateString());
+            } else {
+                document.getElementById('schedule-img').style.display = 'none';
+                document.getElementById('no-sched-text').style.display = 'block';
+                document.getElementById('sched-stamp').style.display = 'none';
+                document.getElementById('admin-delete-sched-btn').style.display = 'none';
+            }
+        }
+
+        async function deleteScheduleImage() {
+            if (!isRoomAdmin || !currentRoomId) return;
+            if (!confirm('Are you sure you want to remove the schedule?')) return;
+            
+            const { data: files } = await supabaseClient.storage.from('notes').list();
+            const schedFile = files?.find(f => f.name.startsWith(`room_${currentRoomId}_schedule_`));
+            if (schedFile) {
+                await supabaseClient.storage.from('notes').remove([schedFile.name]);
+                loadScheduleImage();
+                document.getElementById('sched-upload-status').innerText = '';
+            }
+        }
+
+        // Chat
+        async function loadRoomChat() {
+            if (!currentRoomId) return;
+            const messagesContainer = document.getElementById('chat-messages');
+            const { data: messages } = await supabaseClient.from('room_messages').select('*').eq('room_id', currentRoomId).order('created_at', { ascending: true });
+
+            messagesContainer.innerHTML = '';
+            if (messages && messages.length > 0) {
+                messages.forEach(msg => appendMessageUI(msg));
+            } else {
+                messagesContainer.innerHTML = `<div class="empty-state" id="no-messages-text">💬 <p style="margin: 5px 0 0 0;">No messages yet.</p></div>`;
+            }
+
+            if (chatChannel) supabaseClient.removeChannel(chatChannel);
+            chatChannel = supabaseClient.channel(`room_${currentRoomId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: `room_id=eq.${currentRoomId}` }, (payload) => {
+                    appendMessageUI(payload.new);
+                    document.getElementById('chat-unread').style.display = 'inline-block';
+                })
+                .subscribe();
+        }
+
+        function appendMessageUI(msg) {
+            const container = document.getElementById('chat-messages');
+            document.getElementById('no-messages-text')?.remove();
+
+            const isSelf = currentUser && msg.user_id === currentUser.id;
+            const username = msg.sender_email ? msg.sender_email.split('@')[0] : 'Student';
+            const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+            const row = document.createElement('div');
+            row.style.cssText = `display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px; ${isSelf ? 'flex-direction: row-reverse;' : ''}`;
+            row.innerHTML = `
+                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: ${isSelf ? 'var(--accent-gold)' : 'var(--card-border)'}; color: var(--btn-text); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; flex-shrink: 0;">${username.charAt(0).toUpperCase()}</div>
+                <div style="max-width: 70%; padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; word-wrap: break-word; background-color: ${isSelf ? 'var(--accent-gold)' : 'var(--bg-dark)'}; color: ${isSelf ? 'var(--btn-text)' : 'var(--text-primary)'}; border: ${isSelf ? 'none' : '1px solid var(--card-border)'};">
+                    <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 0.7rem; margin-bottom: 3px; opacity: 0.8;">
+                        <span style="font-weight: bold;">${isSelf ? 'You' : escapeHtml(username)}</span><span>${timeStr}</span>
+                    </div>
+                    <div>${escapeHtml(msg.message)}</div>
+                </div>
+            `;
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message || !currentRoomId || !currentUser) return;
+            input.value = '';
+            document.getElementById('chat-unread').style.display = 'none';
+            await supabaseClient.from('room_messages').insert([{ room_id: currentRoomId, user_id: currentUser.id, sender_email: currentUser.email, message }]);
+        }
+
+        // Helpers
+        function escapeHtml(text) {
+            return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+        }
+
+        function copyToClipboard(url, btn) {
+            navigator.clipboard.writeText(url).then(() => {
+                const orig = btn.innerText;
+                btn.innerText = '✅ Copied!';
+                setTimeout(() => btn.innerText = orig, 2000);
+            });
+        }
+
+        function filterLinks() {
+            const query = document.getElementById('link-search').value.toLowerCase().trim();
+            document.querySelectorAll('#links-container .card').forEach(card => {
+                card.style.display = card.getAttribute('data-title').includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function openLightbox() {
+            const img = document.getElementById('schedule-img');
+            if (img.src) {
+                document.getElementById('lightbox-img').src = img.src;
+                document.getElementById('lightbox-modal').style.display = 'block';
+            }
+        }
+        function closeLightbox() { document.getElementById('lightbox-modal').style.display = 'none'; }
+
+        checkUserSession();
+    </script>
+</body>
+</html>
